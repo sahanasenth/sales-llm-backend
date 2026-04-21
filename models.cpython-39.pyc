@@ -1,0 +1,45 @@
+from django.http import JsonResponse
+import json
+from django.shortcuts import render   
+from .llm_engine import handle_query
+
+from rest_framework import viewsets
+from .models import Enquiry, Customer, Appointment, Feedback
+from .serializers import EnquirySerializer, CustomerSerializer, AppointmentSerializer, FeedbackSerializer
+
+
+class EnquiryViewSet(viewsets.ModelViewSet):
+    queryset = Enquiry.objects.all()
+    serializer_class = EnquirySerializer
+
+
+class CustomerViewSet(viewsets.ModelViewSet):
+    queryset = Customer.objects.all()
+    serializer_class = CustomerSerializer
+
+
+class AppointmentViewSet(viewsets.ModelViewSet):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+
+
+class FeedbackViewSet(viewsets.ModelViewSet):
+    queryset = Feedback.objects.all()
+    serializer_class = FeedbackSerializer
+
+
+def ask_view(request):
+    if request.method == "POST":
+        body = json.loads(request.body)
+        query = body.get("query", "")
+
+        result = handle_query(query)
+
+        return JsonResponse(result)
+
+    return JsonResponse({"error": "Only POST method allowed"})
+
+
+
+def chat_page(request):
+    return render(request, "chat.html")
